@@ -83,65 +83,63 @@ float clearAngleRobot() {
 
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
 int main(int argc, char **argv)
 {
   /* necessary to initialize webots stuff */
   wb_robot_init();
 
-  /*
-   * You should declare here WbDeviceTag variables for storing
-   * robot devices like this:
-   *  WbDeviceTag my_sensor = wb_robot_get_device("my_sensor");
-   *  WbDeviceTag my_actuator = wb_robot_get_device("my_actuator");
-   */
+   /* Motors */
+   WbDeviceTag wheel_right= wb_robot_get_device("motor_right");
+   WbDeviceTag wheel_left= wb_robot_get_device("motor_left");
 
-  /* main loop
-   * Perform simulation steps of TIME_STEP milliseconds
-   * and leave the loop when the simulation is over
-   */
+   WbDeviceTag wheels[2];
+   wheels[0] = wheel_right;
+   wheels[1] = wheel_left;
+
+   wb_motor_set_position(wheel_right, INFINITY);
+   wb_motor_set_position(wheel_left, INFINITY);
+
+   float velocity = 6.66;
+   int robot_state = GO;
+
+    /* distance sensor */
+   WbDeviceTag dist_sensor=wb_robot_get_device("distance_sensor");
+   wb_distance_sensor_enable(dist_sensor, TIME_STEP);
+   double distance_value;
+
+   /* enconder */
+   WbDeviceTag encoder = wb_robot_get_device("encoder1");
+   wb_position_sensor_enable(encoder, TIME_STEP);
+
+   float angle;
+
+  /* main loop*/
   while (wb_robot_step(TIME_STEP) != -1) {
 
-    /*
-     * Read the sensors :
-     * Enter here functions to read sensor data, like:
-     *  double val = wb_distance_sensor_get_value(my_sensor);
-     */
+    if (robot_state == GO) {
+      distance_value = searchForObstacles(dist_sensor);
 
-    /* Process sensor data here */
+      if (distance_value== FREEWAY) {
+        advanceStraightLineRobot(wheels, velocity);
+        angle = wb_position_sensor_get_value(encoder);
+        printf("Angle: %lf\n", angle);
+      } else if (distance_value== OBSTACLE) {
+        robot_state = TURN;
+        stopWheels(wheels);
+        straightLineAngle = wb_position_sensor_get_value(encoder);
+      }
+    } else if (robot_state == TURN) {
+      wheelsTurnRight(wheels);
+      angle = getAngleRobot(encoder);
 
-    /*
-     * Enter here functions to send actuator commands, like:
-     * wb_differential_wheels_set_speed(100.0,100.0);
-     */
-  };
+      if (angle >= 0.275*4*PI) {
+        robot_state = GO;
+        stopWheels(wheels);
+        clearAngleRobot();
+      }
+    }
+  }
 
-  /* Enter your cleanup code here */
-
-  /* This is necessary to cleanup webots resources */
   wb_robot_cleanup();
 
   return 0;
