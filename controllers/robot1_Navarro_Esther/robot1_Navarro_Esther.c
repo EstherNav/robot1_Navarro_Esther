@@ -23,6 +23,8 @@
  */
 #define TIME_STEP 64
 
+#define PI 3.14159
+#define OBSTACLE_DIST 20.0
 /*
  * This is the main program.
  * The arguments of the main function can be specified by the
