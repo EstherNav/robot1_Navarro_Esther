@@ -30,6 +30,83 @@
  * The arguments of the main function can be specified by the
  * "controllerArgs" field of the Robot node
  */
+ 
+ enum {
+  GO,
+  TURN,
+  FREEWAY,
+  OBSTACLE
+};
+ double straightLineAngle;
+
+ 
+/* We create some auxiliar functions*/
+int searchForObstacles(WbDeviceTag distance_sensor) {
+  double distance_of_sensor = wb_distance_sensor_get_value(distance_sensor);
+  printf("Distance%lf\n", distance_of_sensor );
+  if (distance_of_sensor > OBSTACLE_DIST)
+    return FREEWAY;
+  else
+    return OBSTACLE;
+}
+
+void advanceStraightLineRobot(WbDeviceTag *wheels, double velocity) {
+  wb_motor_set_velocity(wheels[0], -velocity);
+  wb_motor_set_velocity(wheels[1], -velocity);
+}
+
+void stopWheels(WbDeviceTag *wheels) {
+  wb_motor_set_velocity(wheels[0], 0);
+  wb_motor_set_velocity(wheels[1], 0);
+}
+
+void wheelsTurnRight(WbDeviceTag *wheels) {
+  //double initial_position = wb_position_sensor_get_value()
+  wb_motor_set_velocity(wheels[0], -6.66);
+  wb_motor_set_velocity(wheels[1], 6.66);
+}
+
+double getAngleRobot(WbDeviceTag pos_sensor) {
+  printf("Angle calculation\n");
+  double angle, rotationAngleW1;
+
+  rotationAngleW1 = wb_position_sensor_get_value(pos_sensor);
+  angle = fabs(rotationAngleW1- straightLineAngle);
+  printf("Angle: %lf\n", angle);
+
+  return angle;
+}
+
+float clearAngleRobot() {
+  printf("Clearing angle\n");
+}
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 int main(int argc, char **argv)
 {
   /* necessary to initialize webots stuff */
